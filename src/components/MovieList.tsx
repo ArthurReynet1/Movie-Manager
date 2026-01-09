@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
+import { GlassCard } from "./animated/GlassCard";
+import { ShimmerButton } from "./animated/ShimmerButton";
 
 interface Movie {
   id: number;
@@ -51,10 +54,10 @@ function MovieList() {
   }, [category, searchQuery, currentPage]);
 
   const categories = [
-    { id: "popular" as Category, label: "Popular" },
-    { id: "now_playing" as Category, label: "Now Playing" },
-    { id: "top_rated" as Category, label: "Top Rated" },
-    { id: "upcoming" as Category, label: "Upcoming" },
+    { id: "popular" as Category, label: "Popular", icon: "🔥" },
+    { id: "now_playing" as Category, label: "Now Playing", icon: "🎬" },
+    { id: "top_rated" as Category, label: "Top Rated", icon: "⭐" },
+    { id: "upcoming" as Category, label: "Upcoming", icon: "🎭" },
   ];
 
   const handleMovieClick = (movieId: number) => {
@@ -86,123 +89,169 @@ function MovieList() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen text-gray-100 relative">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search film..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-800 text-gray-100 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
-          />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="🔍 Search for movies..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full px-6 py-4 backdrop-blur-xl bg-white/10 border border-white/20 text-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder-gray-400 text-lg shadow-2xl transition-all"
+            />
+          </div>
+        </motion.div>
 
         {!searchQuery && (
-          <div className="flex flex-wrap gap-3 mb-8">
-            {categories.map((cat) => (
-              <button
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-wrap gap-4 mb-10"
+          >
+            {categories.map((cat, index) => (
+              <motion.button
                 key={cat.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                className={`px-6 py-3 rounded-xl font-bold transition-all shadow-lg ${
                   category === cat.id
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                    ? "bg-linear-to-r from-violet-600 to-fuchsia-600 text-white shadow-violet-500/50"
+                    : "backdrop-blur-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20"
                 }`}
               >
+                <span className="mr-2">{cat.icon}</span>
                 {cat.label}
-              </button>
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
         )}
 
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {loading && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex justify-center items-center py-20"
+            >
+              <motion.div
+                className="w-16 h-16 border-4 border-violet-500 border-t-transparent rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+            </motion.div>
+          )}
 
-        {!loading && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {movies.map((movie) => (
-              <div
-                key={movie.id}
-                className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer"
-              >
-                <div className="relative aspect-2/3">
-                  {movie.poster_path ? (
-                    <img
-                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                      alt={movie.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                      <span className="text-gray-500">No poster</span>
-                    </div>
-                  )}
-                  <div className="absolute top-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded flex items-center gap-1">
-                    <span className="text-yellow-400">★</span>
-                    <span className="text-sm font-semibold">
-                      {movie.vote_average.toFixed(1)}
-                    </span>
+          {!loading && movies.length > 0 && (
+            <motion.div
+              key="movies"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+            >
+              {movies.map((movie, index) => (
+                <GlassCard key={movie.id} delay={index * 0.05} className="group">
+                  <div className="relative aspect-[2/3] overflow-hidden">
+                    {movie.poster_path ? (
+                      <motion.img
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
+                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                        alt={movie.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                        <span className="text-gray-500 text-4xl">🎬</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-3 right-3 backdrop-blur-xl bg-black/60 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg"
+                    >
+                      <span className="text-yellow-400 text-lg">⭐</span>
+                      <span className="text-sm font-bold text-white">
+                        {movie.vote_average.toFixed(1)}
+                      </span>
+                    </motion.div>
                   </div>
-                </div>
 
-                <div className="p-4">
-                  <h3 className="font-semibold text-sm mb-3 line-clamp-2 min-h-10">
-                    {movie.title}
-                  </h3>
-                  <button
-                    onClick={() => handleMovieClick(movie.id)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    View details
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="p-4">
+                    <h3 className="font-bold text-sm mb-3 line-clamp-2 min-h-10 text-white">
+                      {movie.title}
+                    </h3>
+                    <ShimmerButton
+                      onClick={() => handleMovieClick(movie.id)}
+                      className="w-full py-2 text-sm"
+                      variant="primary"
+                    >
+                      View details
+                    </ShimmerButton>
+                  </div>
+                </GlassCard>
+              ))}
+            </motion.div>
+          )}
 
-        {!loading && movies.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-gray-400 text-lg">
-              No film found for this search.
-            </p>
-          </div>
-        )}
+          {!loading && movies.length === 0 && (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-20"
+            >
+              <div className="text-6xl mb-4">🎬</div>
+              <p className="text-gray-400 text-xl font-semibold">
+                No films found for this search.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {!loading && movies.length > 0 && (
-          <div className="flex justify-center items-center gap-4 mt-8">
-            <button
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-center items-center gap-6 mt-12"
+          >
+            <ShimmerButton
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                currentPage === 1
-                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl"
-              }`}
+              className="px-8 py-3"
+              variant="secondary"
             >
-              Précédent
-            </button>
+              ← Précédent
+            </ShimmerButton>
 
-            <span className="text-gray-300 font-medium">
-              Page {currentPage} / {totalPages}
-            </span>
+            <div className="backdrop-blur-xl bg-white/10 border border-white/20 px-6 py-3 rounded-xl">
+              <span className="text-gray-100 font-bold text-lg">
+                Page {currentPage} / {totalPages}
+              </span>
+            </div>
 
-            <button
+            <ShimmerButton
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                currentPage === totalPages
-                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl"
-              }`}
+              className="px-8 py-3"
+              variant="secondary"
             >
-              Suivant
-            </button>
-          </div>
+              Suivant →
+            </ShimmerButton>
+          </motion.div>
         )}
       </div>
     </div>

@@ -1,6 +1,9 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router";
 import { WishlistContext } from "../context/WishlistProvider";
+import { motion } from "framer-motion";
+import { GlassCard } from "./animated/GlassCard";
+import { ShimmerButton } from "./animated/ShimmerButton";
 
 interface MovieDetail {
   id: number;
@@ -98,72 +101,95 @@ function MovieDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex justify-center items-center">
+        <motion.div
+          className="w-20 h-20 border-4 border-violet-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
       </div>
     );
   }
 
   if (!movie) {
     return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 flex justify-center items-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Film not found</h2>
-          <button
-            onClick={() => navigate("/")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
-          >
+      <div className="min-h-screen text-gray-100 flex justify-center items-center">
+        <GlassCard className="text-center p-12">
+          <div className="text-6xl mb-6">🎬</div>
+          <h2 className="text-3xl font-bold mb-6 text-white">Film not found</h2>
+          <ShimmerButton onClick={() => navigate("/")} variant="primary">
             Back to home
-          </button>
-        </div>
+          </ShimmerButton>
+        </GlassCard>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen text-gray-100 relative">
       {movie.backdrop_path && (
-        <div className="relative h-96 overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="relative h-[500px] overflow-hidden"
+        >
           <img
             src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
             alt={movie.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
-        </div>
+          <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
+        </motion.div>
       )}
 
-      <div className="container mx-auto px-4 -mt-64 relative z-10">
+      <div className="container mx-auto px-4 -mt-64 relative z-10 pb-12">
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="shrink-0">
-            {movie.poster_path ? (
-              <img
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                alt={movie.title}
-                className="w-64 rounded-lg shadow-2xl"
-              />
-            ) : (
-              <div className="w-64 h-96 bg-gray-700 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500">No poster</span>
-              </div>
-            )}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="shrink-0"
+          >
+            <GlassCard hover={false}>
+              {movie.poster_path ? (
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  alt={movie.title}
+                  className="w-64 rounded-2xl"
+                />
+              ) : (
+                <div className="w-64 h-96 bg-white/5 rounded-2xl flex items-center justify-center">
+                  <span className="text-gray-500 text-6xl">🎬</span>
+                </div>
+              )}
+            </GlassCard>
+          </motion.div>
 
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold mb-4">{movie.title}</h1>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex-1"
+          >
+            <h1 className="text-5xl font-black mb-6 bg-linear-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+              {movie.title}
+            </h1>
 
-            <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div className="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg">
-                <span className="text-yellow-400 text-xl">★</span>
-                <span className="text-xl font-semibold">
+            <div className="flex flex-wrap items-center gap-4 mb-8">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="flex items-center gap-2 backdrop-blur-xl bg-white/10 border border-white/20 px-5 py-3 rounded-xl shadow-lg"
+              >
+                <span className="text-yellow-400 text-2xl">⭐</span>
+                <span className="text-2xl font-bold text-white">
                   {movie.vote_average.toFixed(1)}
                 </span>
-              </div>
+              </motion.div>
 
               {movie.release_date && (
-                <div className="bg-gray-800 px-4 py-2 rounded-lg">
-                  <span className="text-gray-300">
-                    {new Date(movie.release_date).toLocaleDateString("fr-FR", {
+                <div className="backdrop-blur-xl bg-white/10 border border-white/20 px-5 py-3 rounded-xl">
+                  <span className="text-gray-200 font-semibold">
+                    📅 {new Date(movie.release_date).toLocaleDateString("fr-FR", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -173,123 +199,144 @@ function MovieDetails() {
               )}
 
               {movie.runtime && (
-                <div className="bg-gray-800 px-4 py-2 rounded-lg">
-                  <span className="text-gray-300">
-                    {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}min
+                <div className="backdrop-blur-xl bg-white/10 border border-white/20 px-5 py-3 rounded-xl">
+                  <span className="text-gray-200 font-semibold">
+                    ⏱️ {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}min
                   </span>
                 </div>
               )}
             </div>
 
             {movie.genres && movie.genres.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {movie.genres.map((genre) => (
-                  <span
+              <div className="flex flex-wrap gap-3 mb-8">
+                {movie.genres.map((genre, index) => (
+                  <motion.span
                     key={genre.id}
-                    className="bg-blue-600 px-3 py-1 rounded-full text-sm"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                    className="backdrop-blur-xl bg-linear-to-r from-violet-600/50 to-fuchsia-600/50 border border-white/20 px-4 py-2 rounded-full text-sm font-bold text-white shadow-lg"
                   >
                     {genre.name}
-                  </span>
+                  </motion.span>
                 ))}
               </div>
             )}
 
-            <button
-              onClick={handleWishlistToggle}
-              className={`mb-6 px-6 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl ${
-                isInWishlist
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-8"
             >
-              {isInWishlist
-                ? "Retirer de la wishlist"
-                : "Ajouter à la wishlist"}
-            </button>
+              <ShimmerButton
+                onClick={handleWishlistToggle}
+                variant={isInWishlist ? "danger" : "primary"}
+                className="px-8 py-4 text-lg"
+              >
+                {isInWishlist ? "❌ Retirer de la wishlist" : "💝 Ajouter à la wishlist"}
+              </ShimmerButton>
+            </motion.div>
 
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Synopsis</h2>
-              <p className="text-gray-300 leading-relaxed">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <h2 className="text-3xl font-bold mb-4 text-white">📖 Synopsis</h2>
+              <p className="text-gray-300 leading-relaxed text-lg backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-2xl">
                 {movie.overview || "Aucun synopsis disponible."}
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
         {cast.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">Main Cast</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mt-16"
+          >
+            <h2 className="text-3xl font-black mb-8 bg-linear-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+              🎭 Main Cast
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {cast.map((actor) => (
-                <div
-                  key={actor.id}
-                  className="bg-gray-800 rounded-lg overflow-hidden shadow-lg"
-                >
+              {cast.map((actor, index) => (
+                <GlassCard key={actor.id} delay={0.8 + index * 0.05} hover={false}>
                   {actor.profile_path ? (
                     <img
                       src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
                       alt={actor.name}
-                      className="w-full aspect-2/3 object-cover"
+                      className="w-full aspect-2/3 object-cover rounded-t-2xl"
                     />
                   ) : (
-                    <div className="w-full aspect-2/3 bg-gray-700 flex items-center justify-center">
-                      <span className="text-gray-500 text-4xl">👤</span>
+                    <div className="w-full aspect-2/3 bg-white/5 flex items-center justify-center rounded-t-2xl">
+                      <span className="text-gray-500 text-5xl">👤</span>
                     </div>
                   )}
-                  <div className="p-3">
-                    <h3 className="font-semibold text-sm mb-1">{actor.name}</h3>
+                  <div className="p-4">
+                    <h3 className="font-bold text-sm mb-1 text-white">{actor.name}</h3>
                     <p className="text-gray-400 text-xs">{actor.character}</p>
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {similarMovies.length > 0 && (
-          <div className="mt-12 pb-12">
-            <h2 className="text-2xl font-bold mb-6">Similar Movies</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mt-16"
+          >
+            <h2 className="text-3xl font-black mb-8 bg-linear-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+              🎥 Similar Movies
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {similarMovies.map((similarMovie) => (
-                <div
-                  key={similarMovie.id}
-                  className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer"
-                >
-                  <div className="relative aspect-2/3">
+              {similarMovies.map((similarMovie, index) => (
+                <GlassCard key={similarMovie.id} delay={1.0 + index * 0.05} className="group">
+                  <div className="relative aspect-2/3 overflow-hidden">
                     {similarMovie.poster_path ? (
-                      <img
+                      <motion.img
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
                         src={`https://image.tmdb.org/t/p/w500${similarMovie.poster_path}`}
                         alt={similarMovie.title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                        <span className="text-gray-500">No poster</span>
+                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                        <span className="text-gray-500 text-4xl">🎬</span>
                       </div>
                     )}
-                    <div className="absolute top-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded flex items-center gap-1">
-                      <span className="text-yellow-400">★</span>
-                      <span className="text-sm font-semibold">
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute top-3 right-3 backdrop-blur-xl bg-black/60 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                      <span className="text-yellow-400 text-lg">⭐</span>
+                      <span className="text-sm font-bold text-white">
                         {similarMovie.vote_average.toFixed(1)}
                       </span>
                     </div>
                   </div>
 
                   <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-3 line-clamp-2 min-h-10">
+                    <h3 className="font-bold text-sm mb-3 line-clamp-2 min-h-10 text-white">
                       {similarMovie.title}
                     </h3>
-                    <button
+                    <ShimmerButton
                       onClick={() => handleMovieClick(similarMovie.id)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-medium transition-colors"
+                      className="w-full py-2 text-sm"
+                      variant="primary"
                     >
                       View details
-                    </button>
+                    </ShimmerButton>
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
