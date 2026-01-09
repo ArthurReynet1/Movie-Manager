@@ -1,4 +1,6 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
+
+const WISHLIST_STORAGE_KEY = "movie-manager-wishlist";
 
 export const WishlistContext = createContext<{
   wishlist: number[];
@@ -11,10 +13,20 @@ export const WishlistContext = createContext<{
 });
 
 const WishlistProvider = ({ children }: { children: React.ReactNode }) => {
-  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishlist, setWishlist] = useState<number[]>(() => {
+    const storedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY);
+    return storedWishlist ? JSON.parse(storedWishlist) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
+  }, [wishlist]);
 
   const addToWishlist = (movieId: number) => {
-    setWishlist((prev) => [...prev, movieId]);
+    setWishlist((prev) => {
+      if (prev.includes(movieId)) return prev;
+      return [...prev, movieId];
+    });
   };
 
   const removeFromWishlist = (movieId: number) => {
