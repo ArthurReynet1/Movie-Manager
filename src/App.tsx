@@ -4,10 +4,12 @@ import Wishlist from "./components/Wishlist";
 import MovieDetails from "./components/MovieDetails";
 import { PATHS } from "./routes";
 import Navbar from "./components/Navbar";
+import { GradientBackground } from "./components/animated/GradientBackground";
 
 function App() {
   return (
     <>
+      <GradientBackground />
       <Navbar />
       <Routes>
         <Route path={PATHS.HOME} element={<MovieList />} />
