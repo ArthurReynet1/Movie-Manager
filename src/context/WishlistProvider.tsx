@@ -1,6 +1,6 @@
 import { createContext, useState } from "react";
 
-const WishlistContext = createContext<{
+export const WishlistContext = createContext<{
   wishlist: number[];
   addToWishlist: (movieId: number) => void;
   removeFromWishlist: (movieId: number) => void;
